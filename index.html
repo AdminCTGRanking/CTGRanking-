@@ -9,7 +9,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f111a; color: #ffffff; }
         
-        /* Màu sắc cho các nhãn HT/LT giống trong ảnh của bạn */
         .badge-ht1 { color: #ffd700; border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
         .badge-ht2 { color: #f97316; border: 1px solid #f97316; background: rgba(249,115,22,0.1); }
         .badge-ht3 { color: #fb923c; border: 1px solid #fb923c; background: rgba(251,146,60,0.1); }
@@ -17,15 +16,15 @@
         .badge-lt2 { color: #64748b; border: 1px solid #64748b; background: rgba(100,116,139,0.1); }
         
         .stat-circle {
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             background: #1a1d2b;
             border: 2px solid #2d3142;
+            font-size: 1.2rem;
         }
 
         .avatar-na {
@@ -39,12 +38,13 @@
             font-weight: 900;
             font-size: 24px;
             border-radius: 12px;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body class="p-4 md:p-10">
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-black uppercase tracking-widest mb-8 border-b border-zinc-800 pb-4 text-zinc-400">Player Database</h1>
+        <h1 class="text-2xl font-black uppercase tracking-widest mb-8 border-b border-zinc-800 pb-4 text-zinc-500">Official Rankings</h1>
         <div id="ranking-list" class="space-y-4"></div>
     </div>
 
@@ -61,24 +61,22 @@
             const container = document.getElementById('ranking-list');
             container.innerHTML = data.map((p) => {
                 const totalElo = p.intel + p.biq + p.tac + p.exp;
-                const initial = p.name.charAt(0); // Lấy chữ cái đầu làm ảnh
+                const initial = p.name ? p.name.charAt(0).toUpperCase() : "?";
 
                 return `
-                <div class="bg-[#141721] p-4 rounded-xl flex items-center gap-6 border border-zinc-800/50 shadow-lg">
-                    <!-- Ảnh đại diện dạng chữ (NA style) -->
+                <div class="bg-[#141721] p-4 rounded-xl flex items-center gap-4 md:gap-6 border border-zinc-800/50">
                     <div class="avatar-na">${initial}</div>
                     
                     <div class="flex-grow">
-                        <div class="flex justify-between items-end mb-3">
-                            <h3 class="text-lg font-bold text-zinc-200 uppercase tracking-tight">${p.name}</h3>
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-lg font-bold text-zinc-200 uppercase">${p.name}</h3>
                             <div class="text-right">
-                                <span class="text-[10px] text-zinc-500 font-bold block leading-none">TOTAL</span>
+                                <span class="text-[9px] text-zinc-500 font-bold block">TOTAL ELO</span>
                                 <span class="text-xl font-black text-yellow-500 italic">${totalElo}</span>
                             </div>
                         </div>
 
-                        <!-- Các chỉ số tròn giống ảnh số 2 -->
-                        <div class="flex gap-3">
+                        <div class="flex flex-wrap gap-4">
                             ${statIcon("⚔️", p.intel)}
                             ${statIcon("🧠", p.biq)}
                             ${statIcon("🎯", p.tac)}
@@ -94,21 +92,22 @@
             const tier = getTierInfo(score);
             return `
                 <div class="flex flex-col items-center gap-1">
-                    <div class="stat-circle text-lg shadow-inner">${emoji}</div>
-                    <span class="${tier.class} text-[9px] font-black px-1.5 py-0.5 rounded-md min-w-[32px] text-center">${tier.label}</span>
+                    <div class="stat-circle">${emoji}</div>
+                    <span class="${tier.class} text-[9px] font-black px-2 py-0.5 rounded text-center min-w-[35px]">${tier.label}</span>
                 </div>
             `;
         }
 
         async function init() {
             try {
-                const res = await fetch('player.json');
+                const res = await fetch('players.json'); 
+                if (!res.ok) throw new Error('Không tìm thấy file players.json');
                 const data = await res.json();
-                // Sắp xếp theo tổng điểm
                 data.sort((a, b) => (b.intel+b.biq+b.tac+b.exp) - (a.intel+a.biq+a.tac+a.exp));
                 render(data);
             } catch (e) {
-                console.error("Lỗi tải dữ liệu");
+                console.error(e);
+                document.getElementById('ranking-list').innerHTML = `<p class="text-red-400 font-bold">Lỗi: ${e.message}</p>`;
             }
         }
         init();
