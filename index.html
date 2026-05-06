@@ -1,125 +1,76 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChessTier | Pro Database</title>
-    <script src="https://cdn.tailwindcss.org"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;700;800&display=swap');
-        body { font-family: 'Oxanium', sans-serif; background-color: #050505; color: #ffffff; }
-        .card-ht { border-left: 5px solid #facc15; background: linear-gradient(90deg, rgba(250,204,21,0.05) 0%, #0f0f0f 100%); }
-        .card-lt { border-left: 5px solid #64748b; background: linear-gradient(90deg, rgba(100,116,139,0.05) 0%, #0f0f0f 100%); }
-        .badge-ht1 { background: #facc15; color: #000; }
-        .badge-lt1 { background: #94a3b8; color: #000; }
-        .badge-ht2 { background: #ca8a04; color: #fff; }
-        .badge-lt2 { background: #475569; color: #fff; }
-        .badge-ht3 { background: #713f12; color: #fff; }
-        .badge-lt3 { background: #1e293b; color: #94a3b8; }
-        .stat-bar-bg { height: 4px; background: #1a1a1a; border-radius: 2px; }
-        .stat-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
-        input::placeholder { color: #52525b; }
-    </style>
-</head>
-<body class="p-6 md:p-12 text-zinc-100">
-    <div class="max-w-5xl mx-auto">
-        <header class="mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-                <h1 class="text-5xl font-black italic tracking-tighter uppercase">CHESS<span class="text-yellow-500">TIER</span></h1>
-                <p class="text-zinc-500 font-bold text-[10px] tracking-[0.4em] uppercase mt-2">Professional Direct Sum System</p>
-            </div>
+<!-- Tìm đoạn hàm render(data) và thay thế bằng đoạn dưới đây -->
+<script>
+    function render(data) {
+        const container = document.getElementById('ranking-list');
+        container.innerHTML = data.map((p, i) => {
+            // Tính toán Elo tổng ngay trong lúc render
+            const totalElo = p.intel + p.biq + p.tac + p.exp;
             
-            <!-- Thanh tìm kiếm -->
-            <div class="w-full md:w-72 relative">
-                <input type="text" id="searchInput" placeholder="TÌM TÊN KỲ THỦ..." 
-                    class="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-3 px-4 text-sm font-bold tracking-widest focus:outline-none focus:border-yellow-500 transition-colors uppercase">
-                <div class="absolute right-4 top-3.5 text-zinc-700">🔍</div>
-            </div>
-        </header>
-
-        <div id="ranking-list" class="space-y-4">
-            <!-- Dữ liệu render tại đây -->
-        </div>
-    </div>
-
-    <script>
-        let allPlayers = [];
-
-        function getTierFromElo(elo) {
-            if (elo >= 1800) return { label: "HT1", type: "ht", class: "badge-ht1" };
-            if (elo >= 1600) return { label: "LT1", type: "lt", class: "badge-lt1" };
-            if (elo >= 1360) return { label: "HT2", type: "ht", class: "badge-ht2" };
-            if (elo >= 1120) return { label: "LT2", type: "lt", class: "badge-lt2" };
-            if (elo >= 760)  return { label: "HT3", type: "ht", class: "badge-ht3" };
-            return { label: "LT3", type: "lt", class: "badge-lt3" };
-        }
-
-        function render(data) {
-            const container = document.getElementById('ranking-list');
-            container.innerHTML = data.map((p, i) => `
-                <div class="card-${p.tier.type} flex flex-wrap md:flex-nowrap items-center gap-6 p-5 rounded-lg border border-zinc-900 hover:border-zinc-700 transition-all group animate-in fade-in duration-500">
-                    <div class="text-zinc-800 font-black italic text-2xl w-8">#${i + 1}</div>
-                    <img src="${p.img}" class="w-16 h-16 rounded shadow-md border border-zinc-800 grayscale group-hover:grayscale-0 transition-all">
-                    <div class="flex-grow">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
-                            <div>
-                                <h3 class="text-xl font-bold tracking-tight uppercase group-hover:text-yellow-500 transition-colors">${p.name}</h3>
-                                <div class="${p.tier.class} inline-block px-3 py-0.5 mt-1 text-[10px] font-black italic rounded-sm uppercase">Rank ${p.tier.label}</div>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-3xl font-black text-white italic">★ ${p.elo.toLocaleString()}</span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            ${statRow("INT", p.intel, "bg-blue-500")}
-                            ${statRow("BIQ", p.biq, "bg-red-500")}
-                            ${statRow("TAC", p.tac, "bg-yellow-500")}
-                            ${statRow("EXP", p.exp, "bg-emerald-500")}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function statRow(label, val, color) {
-            const percent = Math.min((val / 500) * 100, 100);
             return `
-                <div class="space-y-1">
-                    <div class="flex justify-between text-[8px] font-bold text-zinc-500 uppercase">
-                        <span>${label}</span>
-                        <span class="text-zinc-300">${val}</span>
-                    </div>
-                    <div class="stat-bar-bg"><div class="stat-fill ${color}" style="width: ${percent}%"></div></div>
-                </div>
-            `;
-        }
-
-        // Tải dữ liệu từ JSON
-        async function init() {
-            try {
-                const response = await fetch('players.json');
-                const rawData = await response.json();
+            <div class="card-${p.tier.type} flex flex-wrap md:flex-nowrap items-center gap-6 p-6 rounded-lg border border-zinc-900 hover:border-zinc-700 transition-all group animate-in fade-in duration-500">
+                <!-- Thứ hạng -->
+                <div class="text-zinc-800 font-black italic text-3xl w-10">#${i + 1}</div>
                 
-                allPlayers = rawData.map(p => {
-                    const elo = p.intel + p.biq + p.tac + p.exp;
-                    return { ...p, elo, tier: getTierFromElo(elo) };
-                }).sort((a, b) => b.elo - a.elo);
+                <!-- Profile Tuyển thủ -->
+                <div class="relative">
+                    <img src="${p.img || 'https://via.placeholder.com/150'}" 
+                         class="w-20 h-20 rounded-full object-cover border-2 border-zinc-800 group-hover:border-yellow-500 transition-all shadow-2xl">
+                    <div class="absolute -bottom-1 -right-1 bg-yellow-500 text-black text-[8px] font-active px-1 rounded font-bold">PRO</div>
+                </div>
 
-                render(allPlayers);
-            } catch (e) {
-                console.error("Lỗi tải JSON:", e);
-                document.getElementById('ranking-list').innerHTML = "<p class='text-red-500'>Lỗi tải dữ liệu. Hãy chạy trên môi trường Server (GitHub Pages).</p>";
-            }
-        }
+                <div class="flex-grow">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
+                        <div>
+                            <h3 class="text-2xl font-black tracking-tighter uppercase group-hover:text-yellow-500 transition-colors">
+                                ${p.name}
+                            </h3>
+                            <div class="${p.tier.class} inline-block px-4 py-0.5 mt-1 text-[11px] font-black italic rounded-full uppercase tracking-widest">
+                                Tier ${p.tier.label}
+                            </div>
+                        </div>
+                        
+                        <!-- Dòng tổng số Elo -->
+                        <div class="text-right">
+                            <span class="block text-[10px] font-bold text-zinc-600 uppercase tracking-[0.3em]">Total Potential Elo</span>
+                            <span class="text-4xl font-black text-white italic drop-shadow-md">★ ${totalElo.toLocaleString()}</span>
+                        </div>
+                    </div>
 
-        // Lọc tìm kiếm
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allPlayers.filter(p => p.name.toLowerCase().includes(term));
-            render(filtered);
-        });
+                    <!-- Hiển thị HT/LT thay cho số điểm cụ thể -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        ${statRow("Intelligence", p.intel, "bg-blue-500")}
+                        ${statRow("Battle IQ", p.biq, "bg-red-500")}
+                        ${statRow("Tactics", p.tac, "bg-yellow-500")}
+                        ${statRow("Experience", p.exp, "bg-emerald-500")}
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
 
-        init();
-    </script>
-</body>
-</html>
+    function statRow(label, val, color) {
+        // Chuyển đổi số điểm sang nhãn HT/LT
+        let tierLabel = "";
+        if (val >= 450) tierLabel = "HT1";
+        else if (val >= 400) tierLabel = "LT1";
+        else if (val >= 340) tierLabel = "HT2";
+        else if (val >= 280) tierLabel = "LT2";
+        else if (val >= 190) tierLabel = "HT3";
+        else tierLabel = "LT3";
+
+        const percent = (val / 500) * 100;
+        
+        return `
+            <div class="space-y-1">
+                <div class="flex justify-between text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">
+                    <span>${label}</span>
+                    <span class="text-yellow-500 font-black">${tierLabel}</span>
+                </div>
+                <div class="stat-bar-bg h-[6px] bg-zinc-900 rounded-full overflow-hidden">
+                    <div class="stat-fill ${color} h-full rounded-full transition-all duration-1000" style="width: ${percent}%"></div>
+                </div>
+            </div>
+        `;
+    }
+</script>
