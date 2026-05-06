@@ -3,49 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChessTier | Stats System</title>
+    <title>ChessTier | Ranking Board</title>
     <script src="https://cdn.tailwindcss.org"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f111a; color: #ffffff; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0b0e14; color: #ffffff; }
         
+        /* Màu sắc các nhãn HT/LT */
         .badge-ht1 { color: #ffd700; border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
         .badge-ht2 { color: #f97316; border: 1px solid #f97316; background: rgba(249,115,22,0.1); }
         .badge-ht3 { color: #fb923c; border: 1px solid #fb923c; background: rgba(251,146,60,0.1); }
         .badge-lt1 { color: #94a3b8; border: 1px solid #94a3b8; background: rgba(148,163,184,0.1); }
         .badge-lt2 { color: #64748b; border: 1px solid #64748b; background: rgba(100,116,139,0.1); }
         
+        /* Vòng tròn biểu tượng chỉ số */
         .stat-circle {
-            width: 42px;
-            height: 42px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #1a1d2b;
-            border: 2px solid #2d3142;
-            font-size: 1.2rem;
+            border: 1.5px solid #2d3142;
         }
+        .stat-circle img { width: 70%; height: 70%; object-fit: contain; }
 
-        .avatar-na {
-            width: 60px;
-            height: 60px;
-            background: #452222;
-            color: #ff5555;
+        /* Khối hiển thị ELO (Thay thế Region) */
+        .elo-box {
+            width: 45px;
+            height: 40px;
+            background: #3a1c1c;
+            color: #ff5e5e;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
-            font-size: 24px;
-            border-radius: 12px;
-            flex-shrink: 0;
+            font-weight: 800;
+            border-radius: 8px;
+            font-size: 14px;
         }
+
+        /* Hiệu ứng dòng bảng */
+        .player-row {
+            background: #11141d;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .player-row:hover { background: #161a25; }
+
+        .rank-number { font-style: italic; font-weight: 900; color: #94a3b8; }
     </style>
 </head>
-<body class="p-4 md:p-10">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-black uppercase tracking-widest mb-8 border-b border-zinc-800 pb-4 text-zinc-500">Official Rankings</h1>
-        <div id="ranking-list" class="space-y-4"></div>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header của bảng -->
+        <div class="grid grid-cols-12 gap-4 px-6 py-3 text-[11px] font-bold text-zinc-600 uppercase tracking-widest border-b border-zinc-800">
+            <div class="col-span-1">#</div>
+            <div class="col-span-5">Player</div>
+            <div class="col-span-2 text-center">Elo</div>
+            <div class="col-span-4 text-center">Tiers</div>
+        </div>
+
+        <div id="ranking-list" class="mt-2 space-y-1">
+            <!-- Dữ liệu sẽ đổ vào đây -->
+        </div>
     </div>
 
     <script>
@@ -57,57 +78,72 @@
             return { label: "HT3", class: "badge-ht3" };
         }
 
+        function statIcon(type, score) {
+            const tier = getTierInfo(score);
+            // Link ảnh tương ứng (bạn hãy đảm bảo tên file đúng trên GitHub)
+            const imgPaths = {
+                exp: 'image_76ed34.png',
+                biq: 'image_76e991.png',
+                intel: 'image_76e210.png',
+                tac: 'image_76e174.png'
+            };
+
+            return `
+                <div class="flex flex-col items-center gap-1">
+                    <div class="stat-circle"><img src="${imgPaths[type]}" alt="${type}"></div>
+                    <span class="${tier.class} text-[8px] font-black px-1 rounded min-w-[28px] text-center">${tier.label}</span>
+                </div>
+            `;
+        }
+
         function render(data) {
             const container = document.getElementById('ranking-list');
-            container.innerHTML = data.map((p) => {
+            container.innerHTML = data.map((p, index) => {
                 const totalElo = p.intel + p.biq + p.tac + p.exp;
-                const initial = p.name ? p.name.charAt(0).toUpperCase() : "?";
 
                 return `
-                <div class="bg-[#141721] p-4 rounded-xl flex items-center gap-4 md:gap-6 border border-zinc-800/50">
-                    <div class="avatar-na">${initial}</div>
+                <div class="player-row grid grid-cols-12 gap-4 px-6 py-4 items-center">
+                    <!-- Số thứ tự -->
+                    <div class="col-span-1 rank-number text-lg">${index + 1}.</div>
                     
-                    <div class="flex-grow">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-lg font-bold text-zinc-200 uppercase">${p.name}</h3>
-                            <div class="text-right">
-                                <span class="text-[9px] text-zinc-500 font-bold block">TOTAL ELO</span>
-                                <span class="text-xl font-black text-yellow-500 italic">${totalElo}</span>
-                            </div>
+                    <!-- Thông tin người chơi -->
+                    <div class="col-span-5 flex items-center gap-4">
+                        <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center font-bold text-zinc-500">
+                            ${p.name.charAt(0)}
                         </div>
+                        <div>
+                            <div class="font-bold text-base text-zinc-100">${p.name}</div>
+                            <div class="text-[10px] text-zinc-500 font-medium">Grandmaster Rank</div>
+                        </div>
+                    </div>
 
-                        <div class="flex flex-wrap gap-4">
-                            ${statIcon("⚔️", p.intel)}
-                            ${statIcon("🧠", p.biq)}
-                            ${statIcon("🎯", p.tac)}
-                            ${statIcon("🔥", p.exp)}
-                        </div>
+                    <!-- Cột ELO (Thay cho Region) -->
+                    <div class="col-span-2 flex justify-center">
+                        <div class="elo-box">${totalElo}</div>
+                    </div>
+
+                    <!-- Cột TIERS (Biểu tượng nằm ngang) -->
+                    <div class="col-span-4 flex justify-center gap-3">
+                        ${statIcon("intel", p.intel)}
+                        ${statIcon("biq", p.biq)}
+                        ${statIcon("tac", p.tac)}
+                        ${statIcon("exp", p.exp)}
                     </div>
                 </div>
                 `;
             }).join('');
         }
 
-        function statIcon(emoji, score) {
-            const tier = getTierInfo(score);
-            return `
-                <div class="flex flex-col items-center gap-1">
-                    <div class="stat-circle">${emoji}</div>
-                    <span class="${tier.class} text-[9px] font-black px-2 py-0.5 rounded text-center min-w-[35px]">${tier.label}</span>
-                </div>
-            `;
-        }
-
         async function init() {
             try {
-                const res = await fetch('players.json'); 
-                if (!res.ok) throw new Error('Không tìm thấy file players.json');
+                const res = await fetch('players.json');
+                if (!res.ok) throw new Error('404 Not Found');
                 const data = await res.json();
+                // Sắp xếp theo tổng điểm cao nhất lên đầu
                 data.sort((a, b) => (b.intel+b.biq+b.tac+b.exp) - (a.intel+a.biq+a.tac+a.exp));
                 render(data);
             } catch (e) {
                 console.error(e);
-                document.getElementById('ranking-list').innerHTML = `<p class="text-red-400 font-bold">Lỗi: ${e.message}</p>`;
             }
         }
         init();
