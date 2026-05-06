@@ -2,16 +2,13 @@
   {
     "name": "Magnus Carlsen",
     "intel": 500, "biq": 495, "tac": 480, "exp": 500,
-    "img": "https://i.pravatar.cc/150?u=1"
   },
   {
     "name": "Hikaru Nakamura",
     "intel": 450, "biq: 470, "tac": 495, "exp": 485,
-    "img": "https://i.pravatar.cc/150?u=2"
   },
   {
     "name": "Gukesh D",
     "intel": 460, "biq": 440, "tac": 455, "exp": 360,
-    "img": "https://i.pravatar.cc/150?u=3"
   }
 ]
