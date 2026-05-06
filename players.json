@@ -1,14 +1,23 @@
 [
   {
     "name": "Magnus Carlsen",
-    "intel": 500, "biq": 495, "tac": 480, "exp": 500,
+    "intel": 500,
+    "biq": 495,
+    "tac": 480,
+    "exp": 500
   },
   {
     "name": "Hikaru Nakamura",
-    "intel": 450, "biq: 470, "tac": 490, "exp": 480,
+    "intel": 450,
+    "biq": 470,
+    "tac": 490,
+    "exp": 480
   },
   {
     "name": "Gukesh D",
-    "intel": 460, "biq": 440, "tac": 455, "exp": 360,
+    "intel": 460,
+    "biq": 440,
+    "tac": 455,
+    "exp": 360
   }
 ]
