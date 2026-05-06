@@ -9,30 +9,32 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0b0e14; color: #ffffff; }
         
-        /* Màu sắc các nhãn HT/LT */
+        /* Màu nhãn HT/LT */
         .badge-ht1 { color: #ffd700; border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
         .badge-ht2 { color: #f97316; border: 1px solid #f97316; background: rgba(249,115,22,0.1); }
         .badge-ht3 { color: #fb923c; border: 1px solid #fb923c; background: rgba(251,146,60,0.1); }
         .badge-lt1 { color: #94a3b8; border: 1px solid #94a3b8; background: rgba(148,163,184,0.1); }
         .badge-lt2 { color: #64748b; border: 1px solid #64748b; background: rgba(100,116,139,0.1); }
         
-        /* Vòng tròn biểu tượng chỉ số */
+        /* Vòng tròn chứa chữ (Thay cho ảnh) */
         .stat-circle {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #1a1d2b;
             border: 1.5px solid #2d3142;
+            font-size: 9px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
         }
-        .stat-circle img { width: 70%; height: 70%; object-fit: contain; }
 
-        /* Khối hiển thị ELO (Thay thế Region) */
         .elo-box {
-            width: 45px;
-            height: 40px;
+            width: 48px;
+            height: 42px;
             background: #3a1c1c;
             color: #ff5e5e;
             display: flex;
@@ -40,33 +42,27 @@
             justify-content: center;
             font-weight: 800;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
         }
 
-        /* Hiệu ứng dòng bảng */
         .player-row {
             background: #11141d;
             border-radius: 4px;
-            transition: background 0.2s;
+            margin-bottom: 4px;
         }
-        .player-row:hover { background: #161a25; }
-
-        .rank-number { font-style: italic; font-weight: 900; color: #94a3b8; }
+        .rank-number { font-style: italic; font-weight: 900; color: #4b5563; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-6xl mx-auto">
-        <!-- Header của bảng -->
-        <div class="grid grid-cols-12 gap-4 px-6 py-3 text-[11px] font-bold text-zinc-600 uppercase tracking-widest border-b border-zinc-800">
+<body class="p-4 md:p-10">
+    <div class="max-w-5xl mx-auto">
+        <div class="grid grid-cols-12 gap-4 px-6 py-3 text-[10px] font-bold text-zinc-600 uppercase tracking-widest border-b border-zinc-800">
             <div class="col-span-1">#</div>
             <div class="col-span-5">Player</div>
             <div class="col-span-2 text-center">Elo</div>
             <div class="col-span-4 text-center">Tiers</div>
         </div>
 
-        <div id="ranking-list" class="mt-2 space-y-1">
-            <!-- Dữ liệu sẽ đổ vào đây -->
-        </div>
+        <div id="ranking-list" class="mt-2"></div>
     </div>
 
     <script>
@@ -78,20 +74,20 @@
             return { label: "HT3", class: "badge-ht3" };
         }
 
-        function statIcon(type, score) {
+        function statCircle(label, score) {
             const tier = getTierInfo(score);
-            // Link ảnh tương ứng (bạn hãy đảm bảo tên file đúng trên GitHub)
-            const imgPaths = {
-                exp: 'image_76ed34.png',
-                biq: 'image_76e991.png',
-                intel: 'image_76e210.png',
-                tac: 'image_76e174.png'
-            };
+            // Ánh xạ tên hiển thị ngắn gọn
+            const shortName = {
+                intel: 'INT',
+                biq: 'BIQ',
+                tac: 'TAC',
+                exp: 'EXP'
+            }[label];
 
             return `
                 <div class="flex flex-col items-center gap-1">
-                    <div class="stat-circle"><img src="${imgPaths[type]}" alt="${type}"></div>
-                    <span class="${tier.class} text-[8px] font-black px-1 rounded min-w-[28px] text-center">${tier.label}</span>
+                    <div class="stat-circle">${shortName}</div>
+                    <span class="${tier.class} text-[8px] font-black px-1.5 py-0.5 rounded min-w-[30px] text-center">${tier.label}</span>
                 </div>
             `;
         }
@@ -100,34 +96,29 @@
             const container = document.getElementById('ranking-list');
             container.innerHTML = data.map((p, index) => {
                 const totalElo = p.intel + p.biq + p.tac + p.exp;
-
                 return `
                 <div class="player-row grid grid-cols-12 gap-4 px-6 py-4 items-center">
-                    <!-- Số thứ tự -->
                     <div class="col-span-1 rank-number text-lg">${index + 1}.</div>
                     
-                    <!-- Thông tin người chơi -->
                     <div class="col-span-5 flex items-center gap-4">
-                        <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center font-bold text-zinc-500">
+                        <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center font-black text-zinc-500 uppercase">
                             ${p.name.charAt(0)}
                         </div>
                         <div>
                             <div class="font-bold text-base text-zinc-100">${p.name}</div>
-                            <div class="text-[10px] text-zinc-500 font-medium">Grandmaster Rank</div>
+                            <div class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter italic">Combat Master</div>
                         </div>
                     </div>
 
-                    <!-- Cột ELO (Thay cho Region) -->
                     <div class="col-span-2 flex justify-center">
                         <div class="elo-box">${totalElo}</div>
                     </div>
 
-                    <!-- Cột TIERS (Biểu tượng nằm ngang) -->
-                    <div class="col-span-4 flex justify-center gap-3">
-                        ${statIcon("intel", p.intel)}
-                        ${statIcon("biq", p.biq)}
-                        ${statIcon("tac", p.tac)}
-                        ${statIcon("exp", p.exp)}
+                    <div class="col-span-4 flex justify-center gap-4">
+                        ${statCircle("intel", p.intel)}
+                        ${statCircle("biq", p.biq)}
+                        ${statCircle("tac", p.tac)}
+                        ${statCircle("exp", p.exp)}
                     </div>
                 </div>
                 `;
@@ -136,10 +127,10 @@
 
         async function init() {
             try {
+                // Sử dụng players.json có chữ 's'
                 const res = await fetch('players.json');
-                if (!res.ok) throw new Error('404 Not Found');
+                if (!res.ok) throw new Error('File not found');
                 const data = await res.json();
-                // Sắp xếp theo tổng điểm cao nhất lên đầu
                 data.sort((a, b) => (b.intel+b.biq+b.tac+b.exp) - (a.intel+a.biq+a.tac+a.exp));
                 render(data);
             } catch (e) {
