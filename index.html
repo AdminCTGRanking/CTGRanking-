@@ -3,85 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChessTier | Pro Rankings</title>
+    <title>ChessTier | Stats System</title>
     <script src="https://cdn.tailwindcss.org"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;700;800&display=swap');
-        body { font-family: 'Oxanium', sans-serif; background-color: #050505; color: #ffffff; }
-        .card-ht { border-left: 5px solid #facc15; background: linear-gradient(90deg, rgba(250,204,21,0.05) 0%, #0f0f0f 100%); }
-        .card-lt { border-left: 5px solid #64748b; background: linear-gradient(90deg, rgba(100,116,139,0.05) 0%, #0f0f0f 100%); }
-        .badge-ht1 { background: #facc15; color: #000; }
-        .badge-lt1 { background: #94a3b8; color: #000; }
-        .badge-ht2 { background: #ca8a04; color: #fff; }
-        .badge-lt2 { background: #475569; color: #fff; }
-        .badge-ht3 { background: #713f12; color: #fff; }
-        .badge-lt3 { background: #1e293b; color: #94a3b8; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f111a; color: #ffffff; }
+        
+        /* Màu sắc cho các nhãn HT/LT giống trong ảnh của bạn */
+        .badge-ht1 { color: #ffd700; border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
+        .badge-ht2 { color: #f97316; border: 1px solid #f97316; background: rgba(249,115,22,0.1); }
+        .badge-ht3 { color: #fb923c; border: 1px solid #fb923c; background: rgba(251,146,60,0.1); }
+        .badge-lt1 { color: #94a3b8; border: 1px solid #94a3b8; background: rgba(148,163,184,0.1); }
+        .badge-lt2 { color: #64748b; border: 1px solid #64748b; background: rgba(100,116,139,0.1); }
+        
+        .stat-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #1a1d2b;
+            border: 2px solid #2d3142;
+        }
+
+        .avatar-na {
+            width: 60px;
+            height: 60px;
+            background: #452222;
+            color: #ff5555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 24px;
+            border-radius: 12px;
+        }
     </style>
 </head>
-<body class="p-6 md:p-12 text-zinc-100">
-    <div class="max-w-5xl mx-auto">
-        <header class="mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-                <h1 class="text-5xl font-black italic tracking-tighter uppercase">CHESS<span class="text-yellow-500 text-6xl">TIER</span></h1>
-                <p class="text-zinc-500 font-bold text-[10px] tracking-[0.4em] uppercase mt-2 underline decoration-yellow-500/50">Official Database</p>
-            </div>
-            <div class="w-full md:w-72">
-                <input type="text" id="searchInput" placeholder="TÌM TÊN KỲ THỦ..." 
-                    class="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-3 px-4 text-sm font-bold tracking-widest focus:outline-none focus:border-yellow-500 transition-colors uppercase">
-            </div>
-        </header>
-
-        <div id="ranking-list" class="space-y-6"></div>
+<body class="p-4 md:p-10">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-black uppercase tracking-widest mb-8 border-b border-zinc-800 pb-4 text-zinc-400">Player Database</h1>
+        <div id="ranking-list" class="space-y-4"></div>
     </div>
 
     <script>
-        let allPlayers = [];
-
-        function getTierFromScore(score) {
-            if (score >= 450) return { label: "HT1", type: "ht", class: "badge-ht1" };
-            if (score >= 400) return { label: "LT1", type: "lt", class: "badge-lt1" };
-            if (score >= 340) return { label: "HT2", type: "ht", class: "badge-ht2" };
-            if (score >= 280) return { label: "LT2", type: "lt", class: "badge-lt2" };
-            if (score >= 190) return { label: "HT3", type: "ht", class: "badge-ht3" };
-            return { label: "LT3", type: "lt", class: "badge-lt3" };
-        }
-
-        // Tier cho tổng Elo (Dựa trên trung bình 4 mảng)
-        function getGlobalTier(totalElo) {
-            const avg = totalElo / 4;
-            return getTierFromScore(avg);
+        function getTierInfo(score) {
+            if (score >= 450) return { label: "HT1", class: "badge-ht1" };
+            if (score >= 400) return { label: "LT1", class: "badge-lt1" };
+            if (score >= 340) return { label: "HT2", class: "badge-ht2" };
+            if (score >= 280) return { label: "LT2", class: "badge-lt2" };
+            return { label: "HT3", class: "badge-ht3" };
         }
 
         function render(data) {
             const container = document.getElementById('ranking-list');
-            container.innerHTML = data.map((p, i) => {
+            container.innerHTML = data.map((p) => {
                 const totalElo = p.intel + p.biq + p.tac + p.exp;
-                const globalTier = getGlobalTier(totalElo);
+                const initial = p.name.charAt(0); // Lấy chữ cái đầu làm ảnh
 
                 return `
-                <div class="card-${globalTier.type} flex flex-wrap md:flex-nowrap items-center gap-6 p-6 rounded-lg border border-zinc-900 hover:border-zinc-700 transition-all group animate-in fade-in duration-700">
-                    <div class="text-zinc-800 font-black italic text-4xl w-12">#${i + 1}</div>
-                    
-                    <img src="${p.img || 'https://i.pravatar.cc/150?u=' + p.name}" 
-                         class="w-24 h-24 rounded-full object-cover border-4 border-zinc-900 group-hover:border-yellow-500 transition-all shadow-2xl">
+                <div class="bg-[#141721] p-4 rounded-xl flex items-center gap-6 border border-zinc-800/50 shadow-lg">
+                    <!-- Ảnh đại diện dạng chữ (NA style) -->
+                    <div class="avatar-na">${initial}</div>
                     
                     <div class="flex-grow">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
-                            <div>
-                                <h3 class="text-3xl font-black tracking-tighter uppercase group-hover:text-yellow-500 transition-colors">${p.name}</h3>
-                                <div class="${globalTier.class} inline-block px-4 py-0.5 mt-1 text-[11px] font-black italic rounded-full uppercase">RANK ${globalTier.label}</div>
-                            </div>
+                        <div class="flex justify-between items-end mb-3">
+                            <h3 class="text-lg font-bold text-zinc-200 uppercase tracking-tight">${p.name}</h3>
                             <div class="text-right">
-                                <span class="block text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Total Skill Elo</span>
-                                <span class="text-4xl font-black text-white italic">★ ${totalElo.toLocaleString()}</span>
+                                <span class="text-[10px] text-zinc-500 font-bold block leading-none">TOTAL</span>
+                                <span class="text-xl font-black text-yellow-500 italic">${totalElo}</span>
                             </div>
                         </div>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            ${statRow("Intel", p.intel, "bg-blue-500")}
-                            ${statRow("B-IQ", p.biq, "bg-red-500")}
-                            ${statRow("Tac", p.tac, "bg-yellow-500")}
-                            ${statRow("Exp", p.exp, "bg-emerald-500")}
+
+                        <!-- Các chỉ số tròn giống ảnh số 2 -->
+                        <div class="flex gap-3">
+                            ${statIcon("⚔️", p.intel)}
+                            ${statIcon("🧠", p.biq)}
+                            ${statIcon("🎯", p.tac)}
+                            ${statIcon("🔥", p.exp)}
                         </div>
                     </div>
                 </div>
@@ -89,41 +90,27 @@
             }).join('');
         }
 
-        function statRow(label, val, color) {
-            const tier = getTierFromScore(val);
-            const percent = (val / 500) * 100;
+        function statIcon(emoji, score) {
+            const tier = getTierInfo(score);
             return `
-                <div class="space-y-1">
-                    <div class="flex justify-between text-[10px] font-bold text-zinc-500 uppercase">
-                        <span>${label}</span>
-                        <span class="text-yellow-500 font-black">${tier.label}</span>
-                    </div>
-                    <div class="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                        <div class="${color} h-full transition-all duration-1000" style="width: ${percent}%"></div>
-                    </div>
+                <div class="flex flex-col items-center gap-1">
+                    <div class="stat-circle text-lg shadow-inner">${emoji}</div>
+                    <span class="${tier.class} text-[9px] font-black px-1.5 py-0.5 rounded-md min-w-[32px] text-center">${tier.label}</span>
                 </div>
             `;
         }
 
         async function init() {
             try {
-                // QUAN TRỌNG: Kiểm tra file trên GitHub là player.json hay players.json
-                const response = await fetch('player.json'); 
-                const rawData = await response.json();
-                allPlayers = rawData.sort((a, b) => (b.intel+b.biq+b.tac+b.exp) - (a.intel+a.biq+a.tac+a.exp));
-                render(allPlayers);
+                const res = await fetch('player.json');
+                const data = await res.json();
+                // Sắp xếp theo tổng điểm
+                data.sort((a, b) => (b.intel+b.biq+b.tac+b.exp) - (a.intel+a.biq+a.tac+a.exp));
+                render(data);
             } catch (e) {
-                console.error(e);
-                document.getElementById('ranking-list').innerHTML = "<p class='text-red-500 text-center font-bold'>LỖI: KHÔNG TÌM THẤY FILE PLAYER.JSON HOẶC SAI CÚ PHÁP!</p>";
+                console.error("Lỗi tải dữ liệu");
             }
         }
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allPlayers.filter(p => p.name.toLowerCase().includes(term));
-            render(filtered);
-        });
-
         init();
     </script>
 </body>
