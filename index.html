@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChessTier | Ranking Board</title>
-    <!-- Sử dụng link Play CDN chính thức của Tailwind -->
+    <!-- Sử dụng link CDN ổn định -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style type="text/tailwindcss">
-        /* Cấu hình thêm cho Tailwind nếu cần */
-        @theme {
-          --color-brand: #ff5e5e;
-        }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0b0e14; color: #ffffff; }
         
-        /* Các style thủ công của bạn giữ nguyên */
-        body { background-color: #0b0e14; color: #ffffff; }
+        /* Màu nhãn HT/LT */
         .badge-ht1 { color: #ffd700; border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
         .badge-ht2 { color: #f97316; border: 1px solid #f97316; background: rgba(249,115,22,0.1); }
         .badge-ht3 { color: #fb923c; border: 1px solid #fb923c; background: rgba(251,146,60,0.1); }
@@ -28,14 +25,21 @@
         }
 
         .elo-box {
-            width: 48px; height: 42px; background: #3a1c1c;
+            width: 55px; height: 42px; background: #3a1c1c;
             color: #ff5e5e; display: flex; align-items: center;
-            justify-content: center; font-weight: 800; border-radius: 8px;
+            justify-content: center; font-weight: 900; border-radius: 8px;
+            font-size: 16px;
         }
+
+        .player-row {
+            background: #11141d; border-radius: 4px; margin-bottom: 4px;
+        }
+        .rank-number { font-style: italic; font-weight: 900; color: #4b5563; }
     </style>
 </head>
 <body class="p-4 md:p-10">
     <div class="max-w-5xl mx-auto">
+        <!-- Bảng tiêu đề -->
         <div class="grid grid-cols-12 gap-4 px-6 py-3 text-[10px] font-bold text-zinc-600 uppercase tracking-widest border-b border-zinc-800">
             <div class="col-span-1">#</div>
             <div class="col-span-5">Player</div>
@@ -47,6 +51,7 @@
     </div>
 
     <script>
+        // Hàm lấy nhãn HT/LT dựa trên điểm từng kỹ năng
         function getTierInfo(score) {
             if (score >= 450) return { label: "HT1", class: "badge-ht1" };
             if (score >= 400) return { label: "LT1", class: "badge-lt1" };
@@ -55,19 +60,20 @@
             return { label: "HT3", class: "badge-ht3" };
         }
 
+        // Hàm lấy danh hiệu dựa trên tổng Elo theo yêu cầu mới
+        function getRankName(totalElo) {
+            if (totalElo >= 1500) return "MASTER";
+            if (totalElo >= 1000) return "SEMI MASTER";
+            if (totalElo >= 600) return "PRO";
+            return "BEGINNER";
+        }
+
         function statCircle(label, score) {
             const tier = getTierInfo(score);
-            // Ánh xạ tên hiển thị ngắn gọn
-            const shortName = {
-                intel: 'INT',
-                biq: 'BIQ',
-                tac: 'TAC',
-                exp: 'EXP'
-            }[label];
-
+            const shortNames = { intel: 'INT', biq: 'BIQ', tac: 'TAC', exp: 'EXP' };
             return `
                 <div class="flex flex-col items-center gap-1">
-                    <div class="stat-circle">${shortName}</div>
+                    <div class="stat-circle">${shortNames[label]}</div>
                     <span class="${tier.class} text-[8px] font-black px-1.5 py-0.5 rounded min-w-[30px] text-center">${tier.label}</span>
                 </div>
             `;
@@ -77,6 +83,8 @@
             const container = document.getElementById('ranking-list');
             container.innerHTML = data.map((p, index) => {
                 const totalElo = p.intel + p.biq + p.tac + p.exp;
+                const rankName = getRankName(totalElo); // Gọi hàm lấy danh hiệu
+
                 return `
                 <div class="player-row grid grid-cols-12 gap-4 px-6 py-4 items-center">
                     <div class="col-span-1 rank-number text-lg">${index + 1}.</div>
@@ -87,7 +95,8 @@
                         </div>
                         <div>
                             <div class="font-bold text-base text-zinc-100">${p.name}</div>
-                            <div class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter italic">Combat Master</div>
+                            <!-- Hiển thị danh hiệu mới tại đây -->
+                            <div class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider italic">${rankName}</div>
                         </div>
                     </div>
 
@@ -108,10 +117,10 @@
 
         async function init() {
             try {
-                // Sử dụng players.json có chữ 's'
                 const res = await fetch('players.json');
-                if (!res.ok) throw new Error('File not found');
+                if (!res.ok) throw new Error('Không tìm thấy file players.json');
                 const data = await res.json();
+                // Sắp xếp giảm dần theo tổng Elo
                 data.sort((a, b) => (b.intel+b.biq+b.tac+b.exp) - (a.intel+a.biq+a.tac+a.exp));
                 render(data);
             } catch (e) {
